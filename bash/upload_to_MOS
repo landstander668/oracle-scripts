@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# This script is used to upload diagnostic files to a specified SR on MOS. It's primarily useful for large
+# files, which the normal web-based interface doesn't handle very well. See Doc ID 1682567.1 on MOS for
+# more details.
+
+# Author:     Adric Norris
+# Version:    1.0
+
+# Set this to your MOS username. It will be overridden by the MOS_ACCOUNT environment variable, if set.
+mos_account="fixme@example.com"
+
+script="$( basename "$0" )"
+file_list=()
+
+if [[ $# -lt 2 ]]; then
+   echo "usage: $script file_name [[file_name]...] sr_number" >&2
+   exit 1
+fi
+
+# error out gracefully if curl isn't available
+if ! command -v curl &>/dev/null; then
+   echo "Unable to locate curl"                                                       >&2
+   echo                                                                               >&2
+   echo "$script requires the \"curl\" utility to be available, which was not found." >&2
+   echo "Please verify that curl is installed and present in your PATH."              >&2
+   exit 2
+fi
+
+# obtain the MOS password, to prevent curl from prompting once per file
+printf "MOS password: "; read -s password
+echo
+
+while [[ $# -ge 1 ]]; do
+   if [[ $# -gt 1 ]]; then
+      file_list+=("$1")
+   else
+      sr_number="$1"
+   fi
+   shift
+done
+
+# time to make the donuts!
+for file in "${file_list[@]}"; do
+   curl_output="$( curl --progress-bar -K - -T "$file" "https://transport.oracle.com/upload/issue/$sr_number/" <<<"user = ${MOS_ACCOUNT:-$mos_account}:$password" )"
+   if [ -n "$curl_output" ]; then
+      echo "$curl_output"
+   fi
+done
