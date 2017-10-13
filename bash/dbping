@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# This script approximates the behaviour of Oracle's tnsping utility, except that it attempts
+# database authentication (which should always fail, assuming reasonable password complexity rules)
+# instead of stopping at the listener. So it goes one step further than a standard tnsping.
+
+# Author:     Adric Norris
+# Version:    1.0
+
+script="$( basename "$0" )"
+count=1
+
+# process the command line parameters
+if [[ $# -eq 0 ]] || [[ $# -gt 2 ]]; then
+   echo "Usage: $script connect_identifier [count]"                             >&2
+   echo                                                                         >&2
+   echo '   The optional "count" value must be an integer in the range of 1-20' >&2
+   exit 1
+elif [[ $# -eq 2 ]]; then
+   count="$2"
+fi
+connection_string="$1"
+
+# make sure that the count is actually valid
+if ! [[ "$count" =~ ^[0-9]{1,2}$ ]] || [[ "$count" -lt 1 ]] || [[ "$count" -gt 20 ]]; then
+   echo 'The optional "count" value must be an integer in the range of 1-20' >&2
+   exit 2
+fi
+
+# error out gracefully if sqlplus isn't available
+if ! command -v sqlplus &>/dev/null; then
+   echo "Unable to locate sqlplus"                                                       >&2
+   echo                                                                                  >&2
+   echo "$script requires the \"sqlplus\" utility to be available, which was not found." >&2
+   echo "It's included in the Oracle full client, and is also an optional component of"  >&2
+   echo "the Oracle instant client. Please verify that sqlplus is installed, and that"   >&2
+   echo "your PATH and LD_LIBRARY_PATH environment variables are configured"             >&2
+   echo "appropriately."                                                                 >&2
+   exit 3
+fi
+
+# define a function to perform a single conncetion test, with timing information sent to STDERR
+test_connection() {
+   local TIMEFORMAT="%3R"
+   time ( sqlplus -L -s dbping/x@"$1" </dev/null 2>&1 |
+             grep ORA- |
+             grep -v ORA-01017
+        )
+}
+
+# time to make the donuts!!!
+for (( n=1; n<=$count; n++ )); do
+
+   # This is REALLY ugly, but allows us to capture STDIN and STDERR output to separate variables,
+   # without the need for tempfiles.
+   . <( { stderr="$( { stdout="$( test_connection "$connection_string" )"; } 2>&1; declare -p stdout >&2 )"; declare -p stderr; } 2>&1 )
+
+   time="$( echo "scale=0; $stderr * 1000 / 1" | bc )"
+   if [ -z "$stdout" ]; then
+      echo "OK ($time msec)"
+   else
+      echo "$stdout"
+      echo "($time msec)"
+   fi
+
+done
