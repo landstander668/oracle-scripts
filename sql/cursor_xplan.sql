@@ -10,7 +10,7 @@ set echo off verify off
 --             2) sql_child_number  - defaults to 0 if sql_id was specified,
 --                                    last executed statement otherwise
 --             3) instance_number   - defaults to current instance
---             4) format            - defaults to "ALL LAST PEEKED_BINDS -PROJECTION"
+--             4) format            - defaults to "ALL IOSTATS LAST PEEKED_BINDS -BYTES -PROJECTION"
 --
 --             NOTE: To omit leading parameters, use a pair of double-quotes as a placeholder
 --
@@ -47,7 +47,7 @@ set echo off verify off
 --             EXECUTE on DBMS_XPLAN
 --
 -- Author:     Adric Norris
--- Version:    1.1
+-- Version:    1.2
 --
 
 -- Get default values, in case the various parameters are omitted
@@ -59,7 +59,7 @@ column instance          new_value _default_instance
 column format            new_value _default_format
 select s.prev_sql_id, s.prev_child_number,
        sys_context('USERENV','INSTANCE') instance,
-       'ALL LAST PEEKED_BINDS -PROJECTION' format
+       'ALL IOSTATS LAST PEEKED_BINDS -BYTES -PROJECTION' format
    from v$session s
    where s.sid = sys_context('USERENV','SID');
 column prev_sql_id       clear
