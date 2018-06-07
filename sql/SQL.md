@@ -24,3 +24,15 @@ The invoking user will require the following object privileges:
 * SELECT on GV$SQL
 * SELECT on GV$SQL_PLAN_STATISTICS_ALL
 * EXECUTE on DBMS_XPLAN
+
+### blocker_tree.sql
+
+This displays a RAC-aware, hierarchical tree of blocking/waiting sessions. It's intended as a lightweight aid for troubleshooting issues with blocked sessions, by making it easy to identify the root lockholder(s).
+
+Usage:
+```
+@blocker_tree
+```
+The invoking user will require the following object privileges:
+
+* SELECT on GV$SESSION
