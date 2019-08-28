@@ -18,10 +18,10 @@ lk as (
                else s2.username
           end blocker_username,
           s1.sql_id, s1.sql_child_number,
-          case when s1.type = 'USER' and regexp_like( s1.program, '^oracle@[^(]+\(P[[:digit:]]{3}\)$' ) then substr( s1.program, -5, 4 )
+          case when s1.type = 'USER' and regexp_like( s1.program, '^oracle@[^(]+\(P([[:xdigit:]]{3}|[PZ][[:xdigit:]]{2})\)$' ) then substr( s1.program, -5, 4 )
                else NULL
           end waiter_pq,
-          case when s2.type = 'USER' and regexp_like( s2.program, '^oracle@[^(]+\(P[[:digit:]]{3}\)$' ) then substr( s2.program, -5, 4 )
+          case when s2.type = 'USER' and regexp_like( s2.program, '^oracle@[^(]+\(P([[:xdigit:]]{3}|[PZ][[:xdigit:]]{2})\)$' ) then substr( s2.program, -5, 4 )
                else NULL
           end blocker_pq
       from sess s1
