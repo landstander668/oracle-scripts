@@ -12,7 +12,10 @@ with sess as (
 lk as (
    select s1.blocking_instance || '.' || s1.blocking_session || '.' || s2.serial# blocker, s2.status blocking_status,
           s2.sql_id blocking_sql_id, s2.sql_child_number blocking_child_number, s1.inst_id || '.' || s1.sid || '.' || s1.serial# waiter, s1.status,
-          s1.username waiter_username,
+          case when s1.type = 'BACKGROUND' then 'System: ' || substr( s1.program, -5, 4 )
+               when s1.username is NULL    then 'Unknown: possibly job/scheduler related'
+               else s1.username
+          end waiter_username,
           case when s2.type = 'BACKGROUND' then 'System: ' || substr( s2.program, -5, 4 )
                when s2.username is NULL    then 'Unknown: possibly job/scheduler related'
                else s2.username
