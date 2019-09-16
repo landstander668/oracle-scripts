@@ -36,3 +36,18 @@ Usage:
 The invoking user will require the following object privileges:
 
 * SELECT on GV$SESSION
+
+### hex_to_\*.sql
+
+This is a series of scripts which take a hexadecimal string as their only parameter, and map it to the corresponding DATE, TIMESTAMP, or TIMESTAMP WITH TIME ZONE value. This can be useful for interpreting values found in tracefiles, as well as the SQL Monitor page of Oracle Enterprise Manager. Results are displayed using the session NLS settings (*nls_date_format*, etc.).
+
+* **hex_to_date.sql** - Map a 14-character hexadecimal value, representing 7 bytes, to DATE. This script can also be use for TIMESTAMP, TIMESTAMP WITH TIME ZONE, and TIMESTAMP WITH LOCAL TIME ZONE values—all of which encode the leading 7 bytes identically—although fractional seconds and any timezone data will naturally be lost.
+* **hex_to_timestamp.sql** - Map a 14 or 22 character hexadecimal value, representing 7 or 11 bytes, to TIMESTAMP. This script can also be used for TIMESTAMP WITH **LOCAL** TIME ZONE values, which are encoded in an identical manner (but are normally *displayed* using the client's time zone). The 7-byte version indicates a timestamp with no fractional seconds stored, in which case it's encoded just like a DATE value.
+* **hex_to_timestamp_tz.sql** - Map a 26-character hexadecimal value, representing 13 bytes, to TIMESTAMP WITH TIME ZONE.
+
+Usage:
+```
+@hex_to_date 7877090d01363a
+@hex_to_timestamp 7877090d01363a008efd78
+@hex_to_timestamp_tz 7877090d05363a008efd78103c
+```
