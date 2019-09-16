@@ -6,7 +6,7 @@ column child                         format 9999
 column pq                            format a4
 with sess as (
    select /*+ MATERIALIZE */ s.inst_id, s.sid, s.serial#, s.type, s.username, s.sql_id, s.sql_child_number, s.status, s.program,
-          s.blocking_instance, s.blocking_session
+          s.blocking_instance, s.blocking_session, s.blocking_session_status
       from gv$session s
 ),
 lk as (
@@ -30,6 +30,7 @@ lk as (
                          )
       where s1.blocking_instance is not null
         and s1.blocking_session  is not null
+        and s1.blocking_session_status = 'VALID'
 )
 select lpad( '  ', 2*(level-1) ) || t.waiter lock_tree, t.username, t.sql_id, t.child, t.status, t.pq
    from ( select l1.blocker, l1.waiter, l1.waiter_username username, l1.sql_id, l1.sql_child_number child, l1.status, l1.waiter_pq pq
@@ -41,4 +42,3 @@ select lpad( '  ', 2*(level-1) ) || t.waiter lock_tree, t.username, t.sql_id, t.
         ) t
    connect by prior t.waiter = t.blocker
       start with t.blocker is NULL;
-
