@@ -23,4 +23,4 @@ upload_to_MOS file1 [[file2]...] sr_number
 ```
 This requires a minimum of two parameters, with all leading parameters indicating files to be uploaded. The final parameter is the target SR number for the upload data.
 
-Your MOS username can be set either by updating the "mos_account=" line near the top of the script, or setting the *MOS_ACCOUNT* environment (which will override the former). The script will prompt for your MOS password, when is then provided to cURL once per file being upload. This value is not saved, or used in any other manner.
+Your MOS username can be set either by updating the "mos_account=" line near the top of the script, or setting the *MOS_ACCOUNT* environment variable (which will override the former). The script will prompt for your MOS password, which is then provided to cURL once per file being uploaded. This value is not saved, or used in any other manner.
